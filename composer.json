@@ -1,5 +1,7 @@
 {
     "require": {
-        "silex/silex": "^2.2"
+        "silex/silex": "^2.2",
+        "jibundeyare/silex-php-view": "^1.0",
+        "doctrine/dbal": "^2.5"
     }
 }
