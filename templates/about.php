@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>À propos</title>
-  </head>
-  <body>
-    <h1>À propos</h1>
-    <p>lorem ipsum</p>
-  </body>
-</html>
+<?php require __DIR__.'/header.php' ?>
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <h1>À propos</h1>
+            <p>lorem ipsum</p>
+        </div>
+    </div>
+</div>
+
+<?php require __DIR__.'/footer.php' ?>

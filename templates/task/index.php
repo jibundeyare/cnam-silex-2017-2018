@@ -1,29 +1,27 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title></title>
-        <link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css" />
-        <link rel="stylesheet" href="/css/main.css" />
-    </head>
-    <body>
+<?php require __DIR__.'/../header.php' ?>
 
-        <h1>task list</h1>
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h1>task list</h1>
 
-        <table class="table">
+                    <table class="table">
 <?php
-foreach ($tasks as $task) {
-    echo '<tr>';
-    echo '<td>'.$task['id'].'</td>';
-    echo '<td>'.$task['title'].'</td>';
-    echo '<td>'.$task['done'].'</td>';
-    echo '<td>'.$task['deadline'].'</td>';
-    echo '<td>'.$task['name'].'</td>';
-    echo '</tr>';
-}
+foreach ($tasks as $task):
 ?>
-        </table>
+                        <tr>
+                            <td><?= $task['id'] ?></td>
+                            <td><a href="/task/<?= $task['id'] ?>"><?= $task['title'] ?></a></td>
+                            <td><?= $task['done'] ?></td>
+                            <td><?= $task['deadline'] ?></td>
+                            <td><?= $task['name'] ?></td>
+                        </tr>
+<?php
+endforeach;
+?>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-    </body>
-</html>
+<?php require __DIR__.'/../footer.php' ?>

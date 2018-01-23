@@ -60,9 +60,14 @@ $app->get('/task', function() use($app) {
     ]);
 });
 
-$app->get('/task/{id}', function($id) use($app, $task) {
-    // @todo requête sql
-    // @todo récupération du résultat dans la variable $task
+$app->match('/task/new', function() use($app) {
+    return $app['view']->render('task/new.php', [
+    ]);
+})->method('GET|POST');
+
+$app->get('/task/{id}', function($id) use($app) {
+    $sql = 'SELECT * FROM `task` WHERE `id` = ?';
+    $task = $app['db']->fetchAssoc($sql, [$id]);
 
     return $app['view']->render('task/single.php', [
         'task' => $task,
