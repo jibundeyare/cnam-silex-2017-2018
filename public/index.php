@@ -61,7 +61,33 @@ $app->get('/task', function() use($app) {
 });
 
 $app->match('/task/new', function() use($app) {
+    $errorMessages = [];
+
+    if ($_POST) {
+        $error = false;
+
+        if (empty($_POST['title'])) {
+            $error = true;
+            $errorMessages['title'] = 'Veuillez remplir ce champ';
+        }
+
+        if (!$error) {
+            $title = $_POST['title'];
+            $done = (int) isset($_POST['done']);
+            $deadline = $_POST['deadline'];
+            $importance_id = $_POST['importance_id'];
+
+            $app['db']->insert('task', [
+                'title' => $title,
+                'done' => $done,
+                'deadline' => $deadline,
+                'importance_id' => $importance_id,
+            ]);
+        }
+    }
+
     return $app['view']->render('task/new.php', [
+        'errorMessages' => $errorMessages,
     ]);
 })->method('GET|POST');
 
@@ -69,7 +95,7 @@ $app->get('/task/{id}', function($id) use($app) {
     $sql = 'SELECT * FROM `task` WHERE `id` = ?';
     $task = $app['db']->fetchAssoc($sql, [$id]);
 
-    return $app['view']->render('task/single.php', [
+    return $app['view']->render('task/show.php', [
         'task' => $task,
     ]);
 });
