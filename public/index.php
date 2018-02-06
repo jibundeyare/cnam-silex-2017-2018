@@ -1,5 +1,8 @@
 <?php
 
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Yaml\Yaml;
+
 require_once __DIR__.'/../vendor/autoload.php';
 
 // fixture
@@ -17,15 +20,10 @@ $app = new Silex\Application();
 
 $app['debug'] = true;
 
+$parameters = Yaml::parseFile(__DIR__.'/../config/parameters.yml');
+
 $app->register(new Silex\Provider\DoctrineServiceProvider(), [
-    'db.options' => [
-        'driver'    => 'pdo_mysql',
-        'host'      => '127.0.0.1',
-        'dbname'    => 'cnam_silex_2017_2018',
-        'user'      => 'root',
-        'password'  => '123',
-        'charset'   => 'utf8mb4',
-    ],
+    'db.options' => $parameters,
 ]);
 
 $app->register(new SilexPhpView\ViewServiceProvider(), [
@@ -60,22 +58,33 @@ $app->get('/task', function() use($app) {
     ]);
 });
 
-$app->match('/task/new', function() use($app) {
+$app->match('/task/new', function(Request $request) use($app) {
     $errorMessages = [];
 
-    if ($_POST) {
+    if ($request->getMethod() == 'POST') {
         $error = false;
 
-        if (empty($_POST['title'])) {
+        if (empty($request->get('title'))) {
             $error = true;
             $errorMessages['title'] = 'Veuillez remplir ce champ';
         }
 
         if (!$error) {
-            $title = $_POST['title'];
-            $done = (int) isset($_POST['done']);
-            $deadline = $_POST['deadline'];
-            $importance_id = $_POST['importance_id'];
+            $title = $request->get('title');
+            $done = (int) $request->request->has('done');
+
+            // le champs deadline doit être `null` si aucune date n'est précisée
+            // vérification avec un bloc if
+            if (empty($request->get('deadline'))) {
+                $deadline = null;
+            } else {
+                $deadline = $request->get('deadline');
+            }
+
+            // même vérification mais avec un opérateur ternaire
+            // $deadline = empty($request->get('deadline')) ? null : $request->get('deadline');
+
+            $importance_id = $request->get('importance_id');
 
             $app['db']->insert('task', [
                 'title' => $title,
@@ -92,8 +101,8 @@ $app->match('/task/new', function() use($app) {
 })->method('GET|POST');
 
 $app->get('/task/{id}', function($id) use($app) {
-    $sql = 'SELECT * FROM `task` WHERE `id` = ?';
-    $task = $app['db']->fetchAssoc($sql, [$id]);
+    $sql = 'SELECT * FROM task WHERE id = ?';
+    $task = $conn->fetchAssoc($sql, [$id]);
 
     return $app['view']->render('task/show.php', [
         'task' => $task,

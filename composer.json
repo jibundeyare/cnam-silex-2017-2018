@@ -1,7 +1,9 @@
 {
     "require": {
         "silex/silex": "^2.2",
-        "jibundeyare/silex-php-view": "^1.0",
-        "doctrine/dbal": "^2.5"
+        "jibundeyare/silex-php-view": "~1.0",
+        "doctrine/dbal": "~2.5",
+        "symfony/yaml": "~3.4",
+        "symfony/var-dumper": "~3.4"
     }
 }
