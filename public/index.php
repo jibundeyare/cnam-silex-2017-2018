@@ -1,5 +1,9 @@
 <?php
 
+use Silex\Application;
+use Silex\Provider\DoctrineServiceProvider;
+use SilexPhpView\ViewServiceProvider;
+use Symfony\Component\Debug\Debug;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Yaml\Yaml;
 
@@ -16,17 +20,19 @@ $task = [
     'importance' => 'très important',
 ];
 
-$app = new Silex\Application();
+Debug::enable();
+
+$app = new Application();
 
 $app['debug'] = true;
 
 $parameters = Yaml::parseFile(__DIR__.'/../config/parameters.yml');
 
-$app->register(new Silex\Provider\DoctrineServiceProvider(), [
+$app->register(new DoctrineServiceProvider(), [
     'db.options' => $parameters,
 ]);
 
-$app->register(new SilexPhpView\ViewServiceProvider(), [
+$app->register(new ViewServiceProvider(), [
     'view.path' => __DIR__.'/../templates',
 ]);
 
@@ -55,6 +61,15 @@ $app->get('/task', function() use($app) {
 
     return $app['view']->render('task/index.php', [
         'tasks' => $tasks
+    ]);
+});
+
+$app->get('/task/{id}', function($id) use($app) {
+    $sql = 'SELECT * FROM task WHERE id = ?';
+    $task = $conn->fetchAssoc($sql, [$id]);
+
+    return $app['view']->render('task/show.php', [
+        'task' => $task,
     ]);
 });
 
@@ -99,14 +114,5 @@ $app->match('/task/new', function(Request $request) use($app) {
         'errorMessages' => $errorMessages,
     ]);
 })->method('GET|POST');
-
-$app->get('/task/{id}', function($id) use($app) {
-    $sql = 'SELECT * FROM task WHERE id = ?';
-    $task = $conn->fetchAssoc($sql, [$id]);
-
-    return $app['view']->render('task/show.php', [
-        'task' => $task,
-    ]);
-});
 
 $app->run();
