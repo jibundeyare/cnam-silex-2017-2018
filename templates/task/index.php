@@ -10,11 +10,11 @@
 foreach ($tasks as $task):
 ?>
                         <tr>
-                            <td><?= $task['id'] ?></td>
-                            <td><a href="/task/<?= $task['id'] ?>"><?= $task['title'] ?></a></td>
-                            <td><?= $task['done'] ?></td>
-                            <td><?= $task['deadline'] ?></td>
-                            <td><?= $task['name'] ?></td>
+                            <td><?= htmlentities($task['task_id']) ?></td>
+                            <td><a href="/task/<?= htmlentities($task['task_id']) ?>"><?= htmlentities($task['title']) ?></a></td>
+                            <td><?= htmlentities($task['done']) ?></td>
+                            <td><?= htmlentities($task['deadline']) ?></td>
+                            <td><?= htmlentities($task['name']) ?></td>
                         </tr>
 <?php
 endforeach;
