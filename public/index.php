@@ -1,13 +1,5 @@
 <?php
 
-// - escaping (`$app->escape()`)
-// - authentification
-// - upload de fichier
-// - tests unitaires & tests fonctionnels
-// - durée de session (`set_time_limit()`)
-// - gestion des doublons dans la BDD
-// - gestion de dates
-
 use Silex\Application;
 use Silex\Provider\DoctrineServiceProvider;
 use Silex\Provider\SessionServiceProvider;
@@ -38,7 +30,7 @@ $app->error(function (\Exception $e, Request $request, $code) use ($app) {
 $parameters = Yaml::parseFile(__DIR__.'/../config/parameters.yml');
 
 $app->register(new DoctrineServiceProvider(), [
-    'db.options' => $parameters,
+    'db.options' => $parameters['db'],
 ]);
 
 $app->register(new ViewServiceProvider(), [
@@ -47,6 +39,7 @@ $app->register(new ViewServiceProvider(), [
 
 $app->register(new SessionServiceProvider());
 
+// home
 $app->get('/', function() use ($app) {
     return $app['view']->render('home.php');
 });
@@ -101,7 +94,7 @@ $app->get('/go-to-home', function () use ($app) {
 });
 
 $app->get('/task', function() use ($app) {
-    $sql = 'SELECT *, task.id AS task_id
+    $sql = 'SELECT *, task.id AS task_id, importance.name AS importance_name
     FROM task
     INNER JOIN importance ON importance.id = task.importance_id
     ORDER BY importance.weight DESC, task.deadline ASC, task.title ASC';
@@ -112,17 +105,17 @@ $app->get('/task', function() use ($app) {
     ]);
 });
 
-$app->get('/task/{id}', function($id) use ($app) {
-    $sql = 'SELECT * FROM task WHERE id = ?';
-    $task = $app['db']->fetchAssoc($sql, [$id]);
-
-    return $app['view']->render('task/show.php', [
-        'task' => $task,
-    ]);
-});
-
 $app->match('/task/new', function(Request $request) use ($app) {
     $errorMessages = [];
+
+    $task = [];
+    $task['title'] = '';
+    $task['done'] = 0;
+    $task['deadline'] = null;
+    $task['importance_id'] = null;
+
+    $sql = 'SELECT * FROM importance ORDER BY name';
+    $importances = $app['db']->fetchAll($sql);
 
     if ($request->getMethod() == 'POST') {
         $error = false;
@@ -133,34 +126,51 @@ $app->match('/task/new', function(Request $request) use ($app) {
         }
 
         if (!$error) {
-            $title = $request->get('title');
-            $done = (int) $request->request->has('done');
+            $task['title'] = $request->get('title');
+            $task['done'] = (int) $request->request->has('done');
 
             // le champs deadline doit être `null` si aucune date n'est précisée
             // vérification avec un bloc if
             if (empty($request->get('deadline'))) {
-                $deadline = null;
+                $task['deadline'] = null;
             } else {
-                $deadline = $request->get('deadline');
+                $task['deadline'] = $request->get('deadline');
             }
 
             // même vérification mais avec un opérateur ternaire
-            // $deadline = empty($request->get('deadline')) ? null : $request->get('deadline');
+            // $task['deadline'] = empty($request->get('deadline')) ? null : $request->get('deadline');
 
-            $importance_id = $request->get('importance_id');
+            $task['importance_id'] = $request->get('importance_id');
 
             $app['db']->insert('task', [
-                'title' => $title,
-                'done' => $done,
-                'deadline' => $deadline,
-                'importance_id' => $importance_id,
+                'title' => $task['title'],
+                'done' => $task['done'],
+                'deadline' => $task['deadline'],
+                'importance_id' => $task['importance_id'],
             ]);
+
+            return $app->redirect('/task');
         }
     }
 
     return $app['view']->render('task/new.php', [
+        'task' => $task,
+        'importances' => $importances,
         'errorMessages' => $errorMessages,
     ]);
 })->method('GET|POST');
+
+$app->get('/task/{id}', function($id) use ($app) {
+    $sql = 'SELECT * FROM task WHERE id = ?';
+    $task = $app['db']->fetchAssoc($sql, [$id]);
+
+    $sql = 'SELECT * FROM importance ORDER BY name';
+    $importances = $app['db']->fetchAll($sql);
+
+    return $app['view']->render('task/show.php', [
+        'task' => $task,
+        'importances' => $importances,
+    ]);
+});
 
 $app->run();

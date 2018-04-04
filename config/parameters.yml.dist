@@ -1,8 +1,9 @@
 # config/parameters.yml.dist
 
-driver: 'pdo_mysql'
-host: ~
-dbname: ~
-user: ~
-password: ~
-charset: 'utf8mb4'
+db:
+  driver: 'pdo_mysql'
+  host: ~
+  dbname: ~
+  user: ~
+  password: ~
+  charset: 'utf8mb4'
